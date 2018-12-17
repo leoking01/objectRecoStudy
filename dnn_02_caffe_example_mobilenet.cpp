@@ -284,8 +284,8 @@ int   net_prepare(    dnn::Net  & net    )
 }
 
 
-void imageProc( Mat  &  src ,  dnn::Net    net  )
-{
+void imageProc( Mat  &  src ,  dnn::Net    net, Mat &  res_detectionMat)
+{ 
     Mat frame = src;
     // cap >> frame; // get a new frame from camera/video or read image
 
@@ -312,14 +312,54 @@ void imageProc( Mat  &  src ,  dnn::Net    net  )
     //! [Set input blob]
 
     //! [Make forward pass]
-    Mat detection = net.forward(); //compute output
+    Mat detection = net.forward(); //compute output   网络推断，这里的结果是分类结果
     //! [Make forward pass]
+
+	cout << "detection.type() = " << detection.type() <<   endl;   //  5   type_id="opencv-nd-matrix"
+	//cout << "detection = " << detection <<   endl;    这个mat 这里无法打印出来，应追溯原因： 类型id不同。
+	FileStorage fs__detection("detection.xml", FileStorage::WRITE);
+	fs__detection << "detection" <<  detection;
+	fs__detection.release();
+
 
     vector<double> layersTimings;
     double freq = getTickFrequency() / 1000;
     double time = net.getPerfProfile(layersTimings) / freq;
 
     Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
+
+	res_detectionMat = detectionMat.clone();
+
+	cout << "detectionMat.type() = " << detectionMat.type() << endl;  //  5    type_id="opencv-matrix">
+	cout << "detectionMat = " << detectionMat << endl;
+	FileStorage fs__detectionMat("detectionMat.xml", FileStorage::WRITE);
+	fs__detectionMat << "detectionMat" << detectionMat;
+	fs__detectionMat.release();
+
+
+	/*
+	modelConfiguration proto= D:\show_gui_qtOpencv\dnn_02_caffe_example_mobilenet/models/ssd_mobilenet_v1_coco.pbtxt
+	modelBinary = D:\show_gui_qtOpencv\dnn_02_caffe_example_mobilenet\models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb
+	OpenCV(ocl4dnn): consider to specify kernel configuration cache directory
+	via OPENCV_OCL4DNN_CONFIG_PATH parameter.
+	OpenCL program build log: dnn/dummy
+	Status -11: CL_BUILD_PROGRAM_FAILURE
+	-cl-no-subgroup-ifp
+	Error in processing command line: Don't understand command line argument "-cl-no-subgroup-ifp"!
+	detection.type() = 5
+	detectionMat.type() = 5
+	detectionMat = [0, 1, 0.043731522, 0.0047170594, -0.0026946664, 0.049707621, 0.46560943;
+	0, 1, 0.043080576, 0.71981436, -0.021562427, 0.99050766, 0.27943459;
+	0, 1, 0.032925494, 0.56528401, 0.0042678863, 1.0026904, 0.16820979;
+	0, 1, 0.032654542, 0.10683896, 0.85502696, 0.14791772, 0.99485612;
+	0, 1, 0.032188639, -0.0057471693, 0.89675927, 0.97442436, 0.99390125;
+	0, 1, 0.027145814, -0.0016687363, 0.0012049526, 0.28638995, 0.30144876;
+	0, 1, 0.027128175, 0.86265779, -0.022649527, 0.99765146, 0.67360026;
+	0, 1, 0.027042584, 0.3999308, -0.00077609345, 0.97606862, 0.11741883;
+	     0   1  2  3  4   5  6   
+每列分别表示：
+    0，  1， 置信度，左，上  右  下 
+	 **/
 
     if (1)
     {
@@ -332,8 +372,9 @@ void imageProc( Mat  &  src ,  dnn::Net    net  )
         cout << "Inference time, ms: " << time << endl;
     }
 
-    //  float confidenceThreshold = parser.get<float>("min_confidence");
-    float confidenceThreshold = 0.10;   //parser.get<float>("min_confidence");
+    // 检测矩阵由很多行组成，每一行表示一个类别，一个结果
+	cout << "detectionMat.size() = " << detectionMat.size()  << endl;
+    float confidenceThreshold = 0.10;   
     for(int i = 0; i < detectionMat.rows; i++)
     {
         float confidence = detectionMat.at<float>(i, 2);
@@ -347,21 +388,26 @@ void imageProc( Mat  &  src ,  dnn::Net    net  )
             int right = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
             int bottom = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
 
+			cout <<"i = "<< i<<  ", imageProc-(left, top, right, bottom) = " << left << " , " << top << " , " << right << " , " << bottom << ", conf = "<< detectionMat.at<float>(i, 2) <<  endl;
+
+			//画出绿色的方框线条
             rectangle(frame, Point(left, top), Point(right, bottom), Scalar(0, 255, 0));
             String label = format("%s: %.2f", classNames[objectClass], confidence);
             cout<<"classNames[objectClass],objectClass,confidence  = "<<   string(classNames [objectClass]) << ","<<objectClass<<","<< confidence<< endl;
             int baseLine = 0;
+			//取得label文字的大小
             Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
             top = max(top, labelSize.height);
+			//画出白色的label图标方块
             rectangle(frame, Point(left, top - labelSize.height),
                       Point(left + labelSize.width, top + baseLine),
-                      Scalar(255, 255, 255), FILLED);
+                      Scalar(255, 255, 255), FILLED    );
+			//标签文字用黑色文字来书写
             putText(frame, label, Point(left, top),
                     FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0));
         }
     }
-
-//    src = frame;
+	imwrite("frame_detection_result.jpg", frame);
 }
 
 
@@ -369,8 +415,8 @@ int main_dnn_02_caffe_example_mobilenet___mat( Mat &src    )
 {
     dnn::Net   net ;
     net_prepare(     net    ) ;
-
-    imageProc(  src  , net );
+	Mat  res_detectionMat;
+    imageProc(  src  , net , res_detectionMat );
 
     return 0;
 }

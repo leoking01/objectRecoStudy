@@ -397,7 +397,9 @@ void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
 	{
 		if (frame.data)
 		{
-			imageProc(frame, net);
+			Mat  res_detectionMat;
+			//imageProc(src, net, res_detectionMat);
+			imageProc(frame, net , res_detectionMat );
 			imshow( "frame", frame);
 		}
 		if (waitKey(10) > 0)
@@ -474,7 +476,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton5_objectMaskRcnnVideo()
 	FreeConsole();
 }
 
-// 
+// mobile-net,   框框优化
 void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -487,9 +489,58 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 	Net  net;
 	net_prepare(net);
 	Mat  src = imread(videoName );
-	imageProc(src, net);
+	if (!src.data)
+	{
+		FreeConsole();
+		return;
+	}
+		
+	Mat  res_detectionMat;
+	imageProc(src, net , res_detectionMat   );
 	imshow( "src",  src );
 	waitKey( 10 );
+
+	if (!res_detectionMat.data)
+	{
+		FreeConsole();
+		return;
+	}
+
+	int  id_max_conf = 79;
+	int left = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 3) * src.cols);
+	int top = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 4) * src.rows);
+	int right = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 5) * src.cols);
+	int bottom = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 6) * src.rows);
+
+
+	if (1)
+	{
+		Mat  frame_01 = src.clone();
+		if (frame_01.channels() == 3)
+		{
+			Mat tmp;
+			cvtColor(frame_01,tmp,  CV_BGR2GRAY   );
+			tmp.copyTo(frame_01);
+		}
+
+		cout << "grab cut processing..." << endl;
+		Mat bgModel, fgModel;
+		cout << "OnBnClickedButton6_rectangleFineMobile-(left, top, right, bottom) = " << left << " , " << top << " , " << right << " , " << bottom << endl;
+		
+		return;
+		
+		Rect grabcutRect = Rect(left, top, right-left , bottom-top   );    //566   360   
+		imshow("frame(grabcutRect)", frame_01(grabcutRect));
+
+		//waitKey(  0);
+		//exit( 0 );
+
+		Mat  grabcutResult;
+		grabCut(frame_01, grabcutResult, grabcutRect, bgModel, fgModel, 3, cv::GC_INIT_WITH_RECT);
+		cout << "finish grab cut process ." << endl;
+		imshow( "grabcutResult", grabcutResult);
+		waitKey( 20  );
+	}
 
 	FreeConsole();
 }

@@ -14,7 +14,7 @@ using namespace cv::dnn;
 int main_dnn_02_caffe_example_mobilenet___video(  );
 int main_dnn_02_caffe_example_mobilenet___mat( Mat &src    );
 
-void imageProc( Mat & src , dnn::Net  net  );
+void imageProc(Mat  &  src, dnn::Net    net, Mat &  res_detectionMat);
 int  net_prepare(    dnn::Net  & net    );
 
 
