@@ -37,7 +37,7 @@ void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask);
 // Postprocess the neural network's output for each frame
 void postprocess(Mat& frame, const vector<Mat>& outs);
 
-int  net_init(Net &  net    )
+int  net_init__maskRcnn(Net &  net    )
 {
 	if ( 1  )  
 	{
@@ -71,7 +71,7 @@ int  net_init(Net &  net    )
 		net.setPreferableBackend(DNN_BACKEND_OPENCV);
 		//net.setPreferableTarget(DNN_TARGET_CPU);
 		net.setPreferableTarget(DNN_TARGET_OPENCL);
-		cout << "finish  net_init(Net &  net  ) .  " << endl;
+		cout << "finish  net_init__maskRcnn(Net &  net  ) .  " << endl;
 	}
 
 
@@ -79,7 +79,7 @@ int  net_init(Net &  net    )
 }
 
 
-int   procImage(Mat   frame, Net  net, int  id)
+int   procImage__maskRcnn(Mat   frame, Net  net, int  id)
 {
 	Mat   blob;
 	// Stop the program if reached end of video
@@ -98,43 +98,75 @@ int   procImage(Mat   frame, Net  net, int  id)
 	std::vector<String> outNames(2);
 	outNames[0] = "detection_out_final";
 	outNames[1] = "detection_masks";
-	vector<Mat> outs;
-	net.forward(outs, outNames);
+	vector<Mat> outs_detection_maskrcnn;
+	net.forward(outs_detection_maskrcnn, outNames);
 
+	cout << "outs_detection_maskrcnn.size() = " << outs_detection_maskrcnn.size() << endl;
+	cout << "outs_detection_maskrcnn[0].size() = " << outs_detection_maskrcnn[0].size() << endl;
+	cout << "outs_detection_maskrcnn[0].channels() = " << outs_detection_maskrcnn[0].channels() << endl;
+	cout << "outs_detection_maskrcnn[1].size() = " << outs_detection_maskrcnn[1].size() << endl;
+	cout << "outs_detection_maskrcnn[1].channels() = " << outs_detection_maskrcnn[1].channels() << endl;
+	//Mat show_1;
+	//outs_detection_maskrcnn[1].convertTo(show_1,  CV_32FC1   );
+	//cout << "outs_detection_maskrcnn[1] = " << show_1  << endl;
+
+	// storage 
+	FileStorage fs__outs_detection_maskrcnn("outs_detection_maskrcnn.xml", FileStorage::WRITE);
+	fs__outs_detection_maskrcnn << "outs_detection_maskrcnn" << outs_detection_maskrcnn;
+	fs__outs_detection_maskrcnn.release();
+
+
+	// storage 
+	Mat outs_detection_maskrcnn_1 = outs_detection_maskrcnn[1];
+	FileStorage fs__outs_detection_maskrcnn_1("outs_detection_maskrcnn_1.yml", FileStorage::WRITE);
+	fs__outs_detection_maskrcnn_1 << "outs_detection_maskrcnn_1" << outs_detection_maskrcnn_1;
+	fs__outs_detection_maskrcnn_1.release();
+
+
+	imwrite( "frame_before_postProcess__maskrcnn.jpg", frame   );
 	// Extract the bounding box and mask for each of the detected objects
-	postprocess(frame, outs);
+	postprocess(frame, outs_detection_maskrcnn);
+	imwrite("frame_after_postProcess__maskrcnn.jpg", frame);
+
+
+
 
 	// Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
 	vector<double> layersTimes;
 	double freq = getTickFrequency() / 1000;
 	double t = net.getPerfProfile(layersTimes) / freq;
+	cout << "Inference time for a frame : "<<  t<<  " ms" <<   endl;
+
+
 	//string label = format("Mask-RCNN on 2.5 GHz Intel Core i7 CPU, Inference time for a frame : %0.0f ms", t);
 	string label = format("Inference time for a frame : %0.0f ms", t);
 	//putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0));
 	putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
-
-
 	putText(frame, string("id=") + to_string(id), Point(60, 75), FONT_HERSHEY_SIMPLEX, 2, Scalar(0, 0, 255));
 
 	// Write the frame with the detection boxes
 	Mat detectedFrame;
 	frame.convertTo(detectedFrame, CV_8U);
-	imwrite("detectedFrame.jpg", detectedFrame);
+	imwrite("detectedFrame_maskrcnn_finalfinal.jpg", detectedFrame);
 
-	imshow("detectedFrame.jpg", frame);
+	imshow("detectedFrame_maskrcnn_finalfinal.jpg", frame);
 	waitKey(20);
 	frame.setTo(0);
-	cout << "finish   procImage(Mat   frame, Net  net   ) .  " << endl;
+	cout << "finish   procImage__maskRcnn(Mat   frame, Net  net   ) .  " << endl;
 	return  0;
 }
 
-int recoImageSingle(Mat  imageInput)
+//maskrcnn   proc  image  
+int recoImageSingle_maskRcnn_image_locate(Mat  imageInput)
 {
 	Net  net;
-	net_init(net   );
+	cout << "start  net_init__maskRcnn(net   ) " << endl;
+	net_init__maskRcnn(net   );
+	cout << "finish  net_init__maskRcnn(net   ) " << endl;
 
-	procImage(imageInput, net, 0);
-	cout << "finish   recoImageSingle(Mat  imageInput) .  " << endl;
+	cout << "start  procImage__maskRcnn(imageInput, net, 0);" << endl;
+	procImage__maskRcnn(imageInput, net, 0);
+	cout << "finish   procImage__maskRcnn(imageInput, net, 0);  " << endl;
 	return 0;
 }
 
@@ -143,10 +175,12 @@ int recoImageSingle(Mat  imageInput)
 
 
 // For each frame, extract the bounding box and mask for each detected object
-void postprocess(Mat& frame, const vector<Mat>& outs)
+void postprocess(Mat& frame, const vector<Mat>& outs_detection_maskrcnn  )   //   outs_detection_maskrcnn
 {
-	Mat outDetections = outs[0];
-	Mat outMasks = outs[1];
+	//一共90类
+	Mat outDetections = outs_detection_maskrcnn[0];     //   1 x 1 x N x 7  ; 若干行，  7列为检测结果
+	Mat outMasks = outs_detection_maskrcnn[1];     //    100x  90 x  15  x  15 ; 后两个为mask元素，第二个为类别数目或编号,第一个为检测到的对象数目
+	
 
 	// Output size of masks is NxCxHxW where
 	// N - number of detected boxes
@@ -155,7 +189,19 @@ void postprocess(Mat& frame, const vector<Mat>& outs)
 	const int numDetections = outDetections.size[2];
 	const int numClasses = outMasks.size[1];
 
+	//cout << "" << outDetections.total() << endl;
 	outDetections = outDetections.reshape(1, outDetections.total() / 7);
+
+	/*
+	outs_detection_maskrcnn[1].channels() = 1
+	postprocess:: outDetections = 
+   [0, 73, 0.62331617, 0.771658,   0.077294856,   0.9984321,  0.18568596;
+	0, 83, 0.61009222, 0.1028232,  0.060688347,   0.67229217, 0.53900695;
+	0, 83, 0.36619449, 0.35507858, 0.089279458,   0.81348944, 0.51844501;
+	0, 75, 0.3528243,  0.50599712, 0,             0.89858884, 0.091171123]
+	 **/
+	cout << "postprocess:: outDetections = " << outDetections << endl;
+
 	for (int i = 0; i < numDetections; ++i)
 	{
 		float score = outDetections.at<float>(i, 2);
@@ -164,8 +210,8 @@ void postprocess(Mat& frame, const vector<Mat>& outs)
 			// Extract the bounding box
 			int classId = static_cast<int>(outDetections.at<float>(i, 1));
 			int left = static_cast<int>(frame.cols * outDetections.at<float>(i, 3));
-			int top = static_cast<int>(frame.rows * outDetections.at<float>(i, 4));
-			int right = static_cast<int>(frame.cols * outDetections.at<float>(i, 5));
+			int top  = static_cast<int>(frame.rows * outDetections.at<float>(i, 4));
+			int right  = static_cast<int>(frame.cols * outDetections.at<float>(i, 5));
 			int bottom = static_cast<int>(frame.rows * outDetections.at<float>(i, 6));
 
 			left = max(0, min(left, frame.cols - 1));
@@ -182,6 +228,9 @@ void postprocess(Mat& frame, const vector<Mat>& outs)
 		}
 	}
 }
+
+
+
 
 // Draw the predicted bounding box, colorize and show the mask on the image
 void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask)
@@ -220,3 +269,7 @@ void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask)
 	drawContours(coloredRoi, contours, -1, color, 5, LINE_8, hierarchy, 100);
 	coloredRoi.copyTo(frame(box), mask);
 }
+
+
+
+

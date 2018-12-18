@@ -20,12 +20,12 @@ using namespace dnn;
 using namespace std;
 
 
-//int recoImageSingle(Mat  imageInput);
+//int recoImageSingle_maskRcnn_image_locate(Mat  imageInput);
 
-int recoImageSingle(Mat  imageInput);
-int   procImage(Mat   frame, Net  net,int  id);
+int recoImageSingle_maskRcnn_image_locate(Mat  imageInput);
+int   procImage__maskRcnn(Mat   frame, Net  net,int  id);
 
-int  net_init(Net &  net  );
+int  net_init__maskRcnn(Net &  net  );
 
 //enum   typeOfModel { YOLO3_maskRcnn, ssd_mobilenet };
 

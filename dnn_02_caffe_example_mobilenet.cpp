@@ -372,7 +372,7 @@ void imageProc( Mat  &  src ,  dnn::Net    net, Mat &  res_detectionMat)
         cout << "Inference time, ms: " << time << endl;
     }
 
-    // 检测矩阵由很多行组成，每一行表示一个类别，一个结果
+    // 检测矩阵由很多行组成，每一行表示一个实例，以及其详情，包括类别，一个结果
 	cout << "detectionMat.size() = " << detectionMat.size()  << endl;
     float confidenceThreshold = 0.10;   
     for(int i = 0; i < detectionMat.rows; i++)

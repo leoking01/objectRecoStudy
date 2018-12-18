@@ -32,7 +32,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButton1_objectLocate();
+	afx_msg void OnBnClickedButton1_maskRcnn_image_locate();
 	afx_msg void OnBnClickedButton2_locPts4();
 	afx_msg void OnBnClickedButton3_objectLocateCamera();
 	afx_msg void OnBnClickedButton4_localObjMobileCamera();
@@ -40,4 +40,16 @@ public:
 	  void  fetchFileName(string & nameOut );
 	  afx_msg void OnBnClickedButton5_objectMaskRcnnVideo();
 	  afx_msg void OnBnClickedButton6_rectangleFineMobile();
+	  afx_msg void OnBnClickedButton7_grabcutStudy();
+	  afx_msg void OnBnClickedButton8_setIdCamera();
+
+public:
+	int  id_camera;
 };
+
+
+
+int main_studyGrabcut(string nameOfImage);
+
+
+
