@@ -1,9 +1,3 @@
-<img src="object_ui.png" width = "40%"/>
- 
-
-
-
-
 功能介绍：
 	目标定位，grabcut调参和多边形逼近调参。
 	
