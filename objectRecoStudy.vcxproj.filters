@@ -39,6 +39,21 @@
     <ClInclude Include="dnn_02_caffe_example_mobilenet.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CaffeModelDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TensorflowModelStudy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassicalStudy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TorchModelStudy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ssdModelStudy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="objectRecoStudy.cpp">
@@ -54,6 +69,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="dnn_02_caffe_example_mobilenet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CaffeModelDialog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TensorflowModelStudy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassicalStudy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TorchModelStudy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ssdModelStudy.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

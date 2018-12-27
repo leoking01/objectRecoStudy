@@ -90,6 +90,11 @@ BEGIN_MESSAGE_MAP(CobjectRecoStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON6, &CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile)
 	ON_BN_CLICKED(IDC_BUTTON7, &CobjectRecoStudyDlg::OnBnClickedButton7_grabcutStudy)
 	ON_BN_CLICKED(IDC_BUTTON8, &CobjectRecoStudyDlg::OnBnClickedButton8_setIdCamera)
+	ON_BN_CLICKED(IDC_BUTTON9, &CobjectRecoStudyDlg::OnBnClickedButton9_caffeModel)
+	ON_BN_CLICKED(IDC_BUTTON10, &CobjectRecoStudyDlg::OnBnClickedButton10_tensorflowModel)
+	ON_BN_CLICKED(IDC_BUTTON11, &CobjectRecoStudyDlg::OnBnClickedButton11TorchStudy)
+	ON_BN_CLICKED(IDC_BUTTON12, &CobjectRecoStudyDlg::OnBnClickedButton12ClassicalStudy)
+	ON_BN_CLICKED(IDC_BUTTON13, &CobjectRecoStudyDlg::OnBnClickedButton13SSD_Study)
 END_MESSAGE_MAP()
 
 
@@ -259,7 +264,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton2_locPts4()
 	{
 		CString picPath;   //定义图片路径变量  
 		CFileDialog dlg(TRUE, NULL, NULL,
-			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT,  NULL, this);   //选择文件对话框  
+			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT, NULL, this);   //选择文件对话框  
 
 		if (dlg.DoModal() == IDOK)
 		{
@@ -303,7 +308,7 @@ void  videoProc_maskRcnn(int  opt, Net  net, int  idx_camera, string   nameOfVid
 	VideoCapture  vc;
 	if (opt == 0)
 		vc.open(idx_camera);
-	else if (opt == 1)
+	else if (opt < 0)
 		vc.open(nameOfVideo);
 	else
 	{
@@ -322,14 +327,14 @@ void  videoProc_maskRcnn(int  opt, Net  net, int  idx_camera, string   nameOfVid
 			start = clock();
 			procImage__maskRcnn(frame, net, id);
 			end = clock();
-			printf("用时：第%d帧， time=%f\n",id ,  ((double)end - start) / CLK_TCKCLOCKS_PER_SEC);
+			printf("用时：第%d帧， time=%f\n", id, ((double)end - start) / CLK_TCKCLOCKS_PER_SEC);
 		}
 		vc >> frame;
 		id++;
 		if (frame.data)
 		{
 			imshow("frame", frame);
-			waitKey( 10  );
+			waitKey(10);
 		}
 		if (waitKey(10) > 0)
 		{
@@ -356,7 +361,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton3_objectLocateCamera()
 	//…calculating…
 
 	Net  net;
-	int  res_net = net_init__maskRcnn(net   );
+	int  res_net = net_init__maskRcnn(net);
 	if (res_net < 0)
 		return;
 
@@ -364,8 +369,11 @@ void CobjectRecoStudyDlg::OnBnClickedButton3_objectLocateCamera()
 	printf("初始化网络用时间： time=%f\n", ((double)end - start) / CLK_TCKCLOCKS_PER_SEC);
 
 	string  nameOfVideo = "D:\\video/7f741afd5fc83b507f64ed09c70da81e.mp4";
-	int  id_cam = 0;
-	videoProc_maskRcnn(    id_cam,   net,  0, nameOfVideo);
+	int  id_cam = this->id_camera;
+
+	cout << "id_camera = " << this->id_camera << endl;
+
+	videoProc_maskRcnn(0, net, id_cam, nameOfVideo);
 
 	FreeConsole();
 	return;
@@ -382,8 +390,8 @@ void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 
-	string  videoName ;
-	fetchFileName(videoName  );
+	string  videoName;
+	fetchFileName(videoName);
 
 	clock_t start, end;
 	start = clock();
@@ -411,8 +419,8 @@ void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
 		{
 			Mat  res_detectionMat;
 			//imageProc(src, net, res_detectionMat);
-			imageProc(frame, net , res_detectionMat );
-			imshow( "frame", frame);
+			imageProc(frame, net, res_detectionMat);
+			imshow("frame", frame);
 		}
 		if (waitKey(10) > 0)
 			break;
@@ -426,7 +434,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
 
 
 
-void CobjectRecoStudyDlg::    fetchFileName( string & nameOut  )
+void CobjectRecoStudyDlg::fetchFileName(string & nameOut)
 {
 	CString picPath;   //定义图片路径变量  
 	CFileDialog dlg(TRUE, NULL, NULL,
@@ -471,7 +479,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton5_objectMaskRcnnVideo()
 
 	Net  net;
 	int  res_net = net_init__maskRcnn(net);
-	if (  res_net < 0  )
+	if (res_net < 0)
 		return;
 
 	end = clock();
@@ -482,7 +490,10 @@ void CobjectRecoStudyDlg::OnBnClickedButton5_objectMaskRcnnVideo()
 
 
 	string  nameOfVideo = videoName;
-	int  id_cam = 1;
+
+	cout << "nameOfVideo = " << nameOfVideo << endl;
+
+	int  id_cam = -1;
 	videoProc_maskRcnn(id_cam, net, 0, nameOfVideo);
 
 	FreeConsole();
@@ -613,7 +624,7 @@ void         approxPolyDP_app_fit_4p(int  thresh, Mat  srcImage, vector<Point2f>
 	{
 		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-		for (int j = 0; j<contours_poly[0].size(); j++)
+		for (int j = 0; j < contours_poly[0].size(); j++)
 		{
 			sprintf(carNmae, "%d", j);
 			putText(drawing, carNmae, contours_poly[0][j], 1, 1, Scalar(255, 0, 255));
@@ -629,13 +640,13 @@ void         approxPolyDP_app_fit_4p(int  thresh, Mat  srcImage, vector<Point2f>
 		//destroyWindow(string("contour_") + to_string(numsRef));
 	}
 
-	return      ;
+	return;
 }
 
 
-float    calc_residure_4p(Mat gray_threshold,  vector<Point2f> pts4_01)
+float    calc_residure_4p(Mat gray_threshold, vector<Point2f> pts4_01)
 {
-	if ( !gray_threshold.data)
+	if (!gray_threshold.data)
 		return -1;
 	float   residure = 0;
 
@@ -645,27 +656,27 @@ float    calc_residure_4p(Mat gray_threshold,  vector<Point2f> pts4_01)
 	vector< Point   >   pts_0;
 	for (vector<Point2f>::iterator it = pts4_01.begin(); it != pts4_01.end(); it++)
 	{
-		pts_0.push_back(  Point(  it->x,  it->y   ));
+		pts_0.push_back(Point(it->x, it->y));
 	}
 	points.push_back(pts_0);
-	Mat dr(gray_threshold.size(),   CV_8UC1,  Scalar( 0 ));
-	drawContours(  dr, points, 0, Scalar(255),  -1    );
-	int  numsFetch  = countNonZero(dr);
+	Mat dr(gray_threshold.size(), CV_8UC1, Scalar(0));
+	drawContours(dr, points, 0, Scalar(255), -1);
+	int  numsFetch = countNonZero(dr);
 
-	residure = abs(numsFetch - numsNonZero) /(float ) (gray_threshold.rows* gray_threshold.cols );
+	residure = abs(numsFetch - numsNonZero) / (float)(gray_threshold.rows* gray_threshold.cols);
 
 	return residure;
 }
 
 
-int  rect_modifier(   Rect & output,   int  stepLen )
+int  rect_modifier(Rect & output, int  stepLen)
 {
 	//Rect  tmp = input;
 	output.x = output.x + stepLen;
 	output.y = output.y + stepLen;
-	output.width  = output.width  - stepLen *2 ;
+	output.width = output.width - stepLen * 2;
 	output.height = output.height - stepLen * 2;
-	if (output.x <  0 || output.y <  0)
+	if (output.x < 0 || output.y < 0)
 		return  -2;
 
 	if (output.width <= 0 || output.height <= 0)
@@ -673,7 +684,7 @@ int  rect_modifier(   Rect & output,   int  stepLen )
 	return 0;
 }
 
-int  get_right_type_and_conf_and_pts(Mat & detectionMat, int  id_type, float&  conf, float*   ft4 , int&  id_line)
+int  get_right_type_and_conf_and_pts(Mat & detectionMat, int  id_type, float&  conf, float*   ft4, int&  id_line)
 {
 	// 检测矩阵由很多行组成，每一行表示一个实例，以及其详情，包括类别，一个结果
 	cout << "g:detectionMat.size() = " << detectionMat.size() << endl;
@@ -683,11 +694,11 @@ int  get_right_type_and_conf_and_pts(Mat & detectionMat, int  id_type, float&  c
 	{
 		float confidence = detectionMat.at<float>(i, 2);
 
-		if (confidence > confidenceThreshold       )
+		if (confidence > confidenceThreshold)
 		{
 			size_t objectClass = (size_t)(detectionMat.at<float>(i, 1));
-			cout << "g:objectClass = " << objectClass <<   endl;
-			if ( fabs(objectClass - id_type ) <1.0  )
+			cout << "g:objectClass = " << objectClass << endl;
+			if (fabs(objectClass - id_type) < 1.0)
 			{
 				float  conf_cur = detectionMat.at<float>(i, 2);
 				if (val_conf < conf_cur)
@@ -696,10 +707,10 @@ int  get_right_type_and_conf_and_pts(Mat & detectionMat, int  id_type, float&  c
 					cout << "g:val_conf = " << val_conf << endl;
 
 					//static_cast<int>
-					float left =  (detectionMat.at<float>(i, 3));
+					float left = (detectionMat.at<float>(i, 3));
 					float top = (detectionMat.at<float>(i, 4));
-					float right =  (detectionMat.at<float>(i, 5));
-					float bottom =  (detectionMat.at<float>(i, 6));
+					float right = (detectionMat.at<float>(i, 5));
+					float bottom = (detectionMat.at<float>(i, 6));
 
 					cout << "g:(left, top, right, bottom) = " << left << " , " << top << " , " << right << " , " << bottom << endl;
 
@@ -734,21 +745,31 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 
 	Net  net;
 	net_prepare(net);
-	Mat  src_store = imread(videoName );
+	Mat  src_store = imread(videoName, 1);
 	if (!src_store.data)
 	{
 		FreeConsole();
 		return;
 	}
+
+	Mat  gray = src_store.clone();
+	if (src_store.channels() == 3)
+	{
+		cvtColor(src_store, gray, CV_BGR2GRAY);
+	}
+	imwrite((videoName + ".gray.jpg").c_str(), gray);
+
+
+
 	Mat  frame_tr = src_store.clone();
 	imshow("frame_tr", frame_tr);
 
-			
+
 	Mat  res_detectionMat;
-	imageProc(frame_tr, net , res_detectionMat   );
-	imshow( "frame_tr", frame_tr);
-	waitKey( 10 );
-	 
+	imageProc(frame_tr, net, res_detectionMat);
+	imshow("frame_tr", frame_tr);
+	waitKey(10);
+
 
 	if (!res_detectionMat.data)
 	{
@@ -762,8 +783,8 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 	float ft4[4];
 	float  conf = 0;
 	int  id_line = 0;
-	get_right_type_and_conf_and_pts(res_detectionMat, id_type, conf, ft4,  id_line );
-	cout << "id_type, conf,   id_line = " << id_type <<","<< conf << "," << id_line << endl;
+	get_right_type_and_conf_and_pts(res_detectionMat, id_type, conf, ft4, id_line);
+	cout << "id_type, conf,   id_line = " << id_type << "," << conf << "," << id_line << endl;
 
 
 	int left;// = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 3) * frame_tr.cols);
@@ -772,10 +793,10 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 	int bottom;//= static_cast<int>(res_detectionMat.at<float>(id_max_conf, 6) * frame_tr.rows);
 
 
-	  left = ft4[0] * frame_tr.cols ;
-	  top = ft4[1]   * frame_tr.rows ;
-	  right = ft4[2] * frame_tr.cols ;
-	  bottom = ft4[3]    * frame_tr.rows ;
+	left = ft4[0] * frame_tr.cols;
+	top = ft4[1] * frame_tr.rows;
+	right = ft4[2] * frame_tr.cols;
+	bottom = ft4[3] * frame_tr.rows;
 
 
 	// get  intresting field 
@@ -785,13 +806,13 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 		if (frame_post.channels() == 1)
 		{
 			Mat tmp;
-			cvtColor(frame_post,tmp,  CV_GRAY2BGR   );
+			cvtColor(frame_post, tmp, CV_GRAY2BGR);
 			tmp.copyTo(frame_post);
 		}
 
 		cout << "grab cut processing..." << endl;
 		cout << "OnBnClickedButton6_rectangleFineMobile-(left, top, right, bottom) = " << left << " , " << top << " , " << right << " , " << bottom << endl;
-		
+
 		//return;
 		Mat   imgGray = frame_post.clone();
 
@@ -799,28 +820,28 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 		float  residure = 10.0;
 
 		//  adapt-grabcut  
-		for(  int  j = -30 ;j<30;j+=  4  )
+		for (int j = -30; j < 30; j += 4)
 		{
 			Mat  frame_01 = imgGray.clone();
 			cout << "________________________________________________________________" << endl;
-			cout << "框框调整： j = " << j <<  endl;
+			cout << "框框调整： j = " << j << endl;
 			Rect grabcutRect = Rect(left, top, right - left, bottom - top);
 
-			int  res_rect = rect_modifier(   grabcutRect, j  );
+			int  res_rect = rect_modifier(grabcutRect, j);
 			if (res_rect < 0)
 			{
-				cout << "矩形调整失败，跳过。  res_rect < 0 " <<   endl;
+				cout << "矩形调整失败，跳过。  res_rect < 0 " << endl;
 				continue;
 			}
-			
+
 			Mat show_rect = frame_post.clone();
-			rectangle(show_rect, grabcutRect,  Scalar( 0,  255,  0  ));
+			rectangle(show_rect, grabcutRect, Scalar(0, 255, 0));
 			//Mat  rect_check = frame_post(grabcutRect);
 			imshow("show_rect", show_rect);
 			waitKey(10);
 			//return;
-			cout << "grabcutRect = "<< grabcutRect << endl;
-			cout << " frame_post.size() = " << frame_post.size()  << endl;
+			cout << "grabcutRect = " << grabcutRect << endl;
+			cout << " frame_post.size() = " << frame_post.size() << endl;
 			//cout << " rect_check.size() = " << rect_check.size() << endl;
 
 			//grabcut 
@@ -893,10 +914,10 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 			int  ind = 0;
 			for (int k = 1; k < 1000; k += 100)
 			{
-				cout << "四边形逼近调整： k = " << k<<   endl;
+				cout << "四边形逼近调整： k = " << k << endl;
 				pts4_01.clear();
 				approxPolyDP_app_fit_4p(thresh, gray_threshold, pts4_01, k, k);
-				   residure = calc_residure_4p(gray_threshold, pts4_01);
+				residure = calc_residure_4p(gray_threshold, pts4_01);
 				cout << "k, len,  residure = " << k << "," << pts4_01.size() << "," << residure << endl;
 				if (pts4_01.size() == 4)
 				{
@@ -909,9 +930,9 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 					for (int n = 0; n < 4; n++)
 					{
 						circle(src_show_4p, pts4_01[n], 3 + 3 * n, Scalar(255, 0, 255), 2, 8, 0);
-						putText(src_show_4p,to_string(n ), pts4_01[n], 1,  1,  Scalar( 0, 0,  255 ),  1,8,  false   );
+						putText(src_show_4p, to_string(n), pts4_01[n], 1, 1, Scalar(0, 0, 255), 1, 8, false);
 					}
-					imshow( "src_show_4p.jpg", src_show_4p);
+					imshow("src_show_4p.jpg", src_show_4p);
 
 
 					break;
@@ -922,7 +943,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 				cout << endl;
 				cout << "定框失败。4点失败。" << endl;
 			}
-			char key = waitKey(   0 );
+			char key = waitKey(0);
 			if (key > 0)
 				continue;
 		}
@@ -978,7 +999,7 @@ int main_studyGrabcut(string nameOfImage)
 	// 4种可能结果 
 	Mat bgModel, fgModel; // 背景/前景 
 
-	for (int i=0;i<15;i+= 3 )
+	for (int i = 0; i < 15; i += 3)
 	{
 		while (1)
 		{
@@ -1052,3 +1073,53 @@ void CobjectRecoStudyDlg::OnBnClickedButton8_setIdCamera()
 	SetDlgItemText(IDC_EDIT2, cs);
 
 }
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton9_caffeModel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	//CaffeModelDlg    cm;
+	//cm.DoModal();
+	CaffeModelDialog   cmd;
+	cmd.DoModal();
+}
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton10_tensorflowModel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	TensorflowModelStudy   sd;
+	sd.DoModal();
+
+}
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton11TorchStudy()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	TorchModelStudy   sd;
+	sd.DoModal();
+}
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton12ClassicalStudy()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ClassicalStudy   sd;
+	sd.DoModal();
+
+
+}
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton13SSD_Study()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ssdModelStudy   sd;
+	sd.DoModal();
+}
+
+
+
+
+

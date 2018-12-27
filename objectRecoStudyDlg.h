@@ -4,6 +4,12 @@
 
 #pragma once
 
+#include "CaffeModelDialog.h"
+#include "TensorflowModelStudy.h"
+#include "TorchModelStudy.h"
+#include "ClassicalStudy.h"
+//#include "ClassicalStudy.h"
+#include  "ssdModelStudy.h"
 
 // CobjectRecoStudyDlg ¶Ô»°¿ò
 class CobjectRecoStudyDlg : public CDialogEx
@@ -45,6 +51,11 @@ public:
 
 public:
 	int  id_camera;
+	afx_msg void OnBnClickedButton9_caffeModel();
+	afx_msg void OnBnClickedButton10_tensorflowModel();
+	afx_msg void OnBnClickedButton11TorchStudy();
+	afx_msg void OnBnClickedButton12ClassicalStudy();
+	afx_msg void OnBnClickedButton13SSD_Study();
 };
 
 
@@ -53,3 +64,9 @@ int main_studyGrabcut(string nameOfImage);
 
 
 
+//class CaffeModelDlg : public CDialogEx
+//{
+//
+//
+//
+//};
