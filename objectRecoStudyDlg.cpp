@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CobjectRecoStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON11, &CobjectRecoStudyDlg::OnBnClickedButton11TorchStudy)
 	ON_BN_CLICKED(IDC_BUTTON12, &CobjectRecoStudyDlg::OnBnClickedButton12ClassicalStudy)
 	ON_BN_CLICKED(IDC_BUTTON13, &CobjectRecoStudyDlg::OnBnClickedButton13SSD_Study)
+	ON_BN_CLICKED(IDC_BUTTON14, &CobjectRecoStudyDlg::OnBnClickedButton14_oneKeyRunAll)
 END_MESSAGE_MAP()
 
 
@@ -344,10 +345,8 @@ void  videoProc_maskRcnn(int  opt, Net  net, int  idx_camera, string   nameOfVid
 
 	}
 	vc.release();
-	//waitKey(0);
 	return;
 }
-
 
 //maskrcnn  --camera 
 void CobjectRecoStudyDlg::OnBnClickedButton3_objectLocateCamera()
@@ -378,10 +377,6 @@ void CobjectRecoStudyDlg::OnBnClickedButton3_objectLocateCamera()
 	FreeConsole();
 	return;
 }
-
-
-
-
 
 // 使用mobilenet--video
 void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
@@ -418,7 +413,6 @@ void CobjectRecoStudyDlg::OnBnClickedButton4_localObjMobileCamera()
 		if (frame.data)
 		{
 			Mat  res_detectionMat;
-			//imageProc(src, net, res_detectionMat);
 			imageProc(frame, net, res_detectionMat);
 			imshow("frame", frame);
 		}
@@ -459,7 +453,6 @@ void CobjectRecoStudyDlg::fetchFileName(string & nameOut)
 	char* keyChar = T2A(picPath.GetBuffer(0));
 	picPath.ReleaseBuffer();
 	string picpath(keyChar);
-	//string   picpath = string(keyChar);
 	nameOut = picpath;
 }
 
@@ -476,7 +469,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton5_objectMaskRcnnVideo()
 	clock_t start, end;
 	start = clock();
 	//…calculating…
-
+ 
 	Net  net;
 	int  res_net = net_init__maskRcnn(net);
 	if (res_net < 0)
@@ -500,84 +493,7 @@ void CobjectRecoStudyDlg::OnBnClickedButton5_objectMaskRcnnVideo()
 }
 
 
-
-
-//void approxPolyDP_app(int  thresh, Mat  srcImage, vector<Point2f> & pts4, int  numsRef)
-//{
-//	//Mat srcImage;
-//	Mat grayImage;
-//	if (srcImage.channels() > 1)
-//	{
-//		cvtColor(srcImage, grayImage, COLOR_BGR2GRAY);
-//	}
-//	else
-//	{
-//		grayImage = srcImage;
-//	}
-//
-//	//blur(grayImage, grayImage, Size(3, 3));
-//
-//	//int thresh = 100;
-//	const int threshMaxValue = 255;
-//	RNG rng(12345);
-//
-//
-//	Mat threshold_output;
-//	vector< vector< Point> > contours;
-//	vector<Vec4i > hierarchy;
-//
-//	// 
-//	threshold(grayImage, threshold_output, thresh, 255, THRESH_BINARY);
-//
-//	findContours(threshold_output, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, Point(0, 0));
-//
-//	cout << "contours.size() = " << contours.size() << endl;
-//
-//	// 
-//	vector<vector<Point>>contours_poly(contours.size());
-//	vector<Rect>boundRect(contours.size());
-//	vector<Point2f>center(contours.size());
-//	vector<float>radius(contours.size());
-//
-//	for (int i = 0; i < contours.size(); i++)
-//	{
-//		approxPolyDP(Mat(contours[i]), contours_poly[i], 3, true);
-//		boundRect[i] = boundingRect(Mat(contours_poly[i]));
-//		minEnclosingCircle((Mat)contours_poly[i], center[i], radius[i]);
-//	}
-//	cout << "contours_poly[0].size() = " << contours_poly[0].size() << endl;
-//	for (int i = 0; i < contours_poly[0].size(); i++)
-//	{
-//		pts4.push_back(Point2f(contours_poly[0][i].x, contours_poly[0][i].y));
-//	}
-//
-//	// 
-//	Mat drawing = Mat::zeros(threshold_output.size(), CV_8UC3);
-//	char  carNmae[300];
-//	for (int i = 0; i < contours.size(); i++)
-//	{
-//		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-//		drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-//
-//		rectangle(drawing, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
-//		circle(drawing, center[i], (int)radius[i], color, 2, 8, 0);
-//		for (int j = 0; j<contours_poly[0].size(); j++)
-//		{
-//			sprintf(carNmae, "%d", j);
-//			putText(drawing, carNmae, contours_poly[0][j], 1, 1, Scalar(255, 0, 255));
-//		}
-//	}
-//
-//	imwrite((string("contour_") + to_string(numsRef) + string(".jpg")).c_str(), drawing);
-//	namedWindow(string("contour_") + to_string(numsRef), WINDOW_AUTOSIZE);
-//	imshow(string("contour_") + to_string(numsRef), drawing);
-//	waitKey(200);
-//
-//}
-//
-
-
-void         approxPolyDP_app_fit_4p(int  thresh, Mat  srcImage, vector<Point2f> & pts4, int  epsilon, int  numsRef)
+void  approxPolyDP_app_fit_4p(int  thresh, Mat  srcImage, vector<Point2f> & pts4, int  epsilon, int  numsRef)
 {
 	//float  residure = 0;
 	pts4.clear();
@@ -644,7 +560,7 @@ void         approxPolyDP_app_fit_4p(int  thresh, Mat  srcImage, vector<Point2f>
 }
 
 
-float    calc_residure_4p(Mat gray_threshold, vector<Point2f> pts4_01)
+float calc_residure_4p(Mat gray_threshold, vector<Point2f> pts4_01)
 {
 	if (!gray_threshold.data)
 		return -1;
@@ -727,9 +643,7 @@ int  get_right_type_and_conf_and_pts(Mat & detectionMat, int  id_type, float&  c
 			}
 		}
 	}
-
 	cout << "g:ft4[0],ft4[1],ft4[2],ft4[3] = " << ft4[0] << ", " << ft4[1] << " , " << ft4[2] << " , " << ft4[3] << endl;
-
 	return 0;
 }
 
@@ -787,10 +701,10 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 	cout << "id_type, conf,   id_line = " << id_type << "," << conf << "," << id_line << endl;
 
 
-	int left;// = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 3) * frame_tr.cols);
+	int left;
 	int top;//= static_cast<int>(res_detectionMat.at<float>(id_max_conf, 4) * frame_tr.rows);
-	int right;// = static_cast<int>(res_detectionMat.at<float>(id_max_conf, 5) * frame_tr.cols);
-	int bottom;//= static_cast<int>(res_detectionMat.at<float>(id_max_conf, 6) * frame_tr.rows);
+	int right; 
+	int bottom; 
 
 
 	left = ft4[0] * frame_tr.cols;
@@ -842,7 +756,6 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 			//return;
 			cout << "grabcutRect = " << grabcutRect << endl;
 			cout << " frame_post.size() = " << frame_post.size() << endl;
-			//cout << " rect_check.size() = " << rect_check.size() << endl;
 
 			//grabcut 
 			Mat  grabcutResult;
@@ -898,17 +811,10 @@ void CobjectRecoStudyDlg::OnBnClickedButton6_rectangleFineMobile()
 			GaussianBlur(gray_threshold, gray_threshold, Size(3, 3), 3, 3);
 			threshold(gray, gray_threshold, 128, 255, 0);//后面必须128
 			GaussianBlur(gray_threshold, gray_threshold, Size(3, 3), 3, 3);
-			//threshold(gray, gray_threshold, 128, 255, 0);
-			//GaussianBlur(gray_threshold, gray_threshold, Size(5, 5), 3, 3);
-			//threshold(gray, gray_threshold, 128, 255, 0);
-			//GaussianBlur(gray_threshold, gray_threshold, Size(5, 5), 3, 3);
-			//imwrite("gray_threshold.jpg", gray_threshold);
 			imshow("gray_threshold", gray_threshold);
 			waitKey(20);
 
 
-			//vector<Point2f> pt2f4  ;
-			//approxPolyDP_app( 128,    gray, pt2f4,  1 );
 			int  thresh = 128;
 			vector<Point2f>   pts4_01;
 			int  ind = 0;
@@ -1032,9 +938,14 @@ int main_studyGrabcut(string nameOfImage)
 void CobjectRecoStudyDlg::OnBnClickedButton7_grabcutStudy()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+
 	string nameOfImage;
 	fetchFileName(nameOfImage);
 	main_studyGrabcut(nameOfImage);
+
+	FreeConsole();
 }
 
 
@@ -1123,3 +1034,15 @@ void CobjectRecoStudyDlg::OnBnClickedButton13SSD_Study()
 
 
 
+
+
+void CobjectRecoStudyDlg::OnBnClickedButton14_oneKeyRunAll()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	cout << "void CobjectRecoStudyDlg::OnBnClickedButton14_oneKeyRunAll() " << endl;
+
+
+	FreeConsole();
+}

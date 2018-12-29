@@ -54,6 +54,12 @@
     <ClInclude Include="ssdModelStudy.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="classicalBayessianDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassicalLinearDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="objectRecoStudy.cpp">
@@ -84,6 +90,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ssdModelStudy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="classicalBayessianDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassicalLinearDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

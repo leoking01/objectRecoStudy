@@ -20,4 +20,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedButton1_classical_Bayessian();
+	afx_msg void OnBnClickedButton2_classical_Linear();
+	afx_msg void OnBnClickedButton3_classical_Non_linear();
 };

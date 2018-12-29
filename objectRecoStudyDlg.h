@@ -56,6 +56,7 @@ public:
 	afx_msg void OnBnClickedButton11TorchStudy();
 	afx_msg void OnBnClickedButton12ClassicalStudy();
 	afx_msg void OnBnClickedButton13SSD_Study();
+	afx_msg void OnBnClickedButton14_oneKeyRunAll();
 };
 
 

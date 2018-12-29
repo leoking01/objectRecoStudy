@@ -94,9 +94,9 @@ int main_dnn_02_caffe_example_mobilenet___video(  )
     String modelBinary ;// = parser.get<String>("model");
 
     modelConfiguration =
-            "../dnn_02_caffe_example_mobilenet/models/ssd_mobilenet_v1_coco.pbtxt";
+            "ssd_mobilenet_v1_coco.pbtxt";
     modelBinary =
-            "../dnn_02_caffe_example_mobilenet/models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb";
+            "models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb";
 
     CV_Assert(!modelConfiguration.empty() && !modelBinary.empty());
 
@@ -129,7 +129,7 @@ int main_dnn_02_caffe_example_mobilenet___video(  )
     VideoCapture cap;
 
 
-    string videoInput = "/media/wkr/diskHgst/video/yk/zyz4.mp4";
+	string videoInput;// = "/media/wkr/diskHgst/video/yk/zyz4.mp4";
     videoInput = "D:/video/yk/jixianpaoku.mp4";
 
     //    cap.open(parser.get<String>("video"));
@@ -150,7 +150,7 @@ int main_dnn_02_caffe_example_mobilenet___video(  )
     VideoWriter outputVideo;
 
 
-    string videoOutput = "/media/wkr/diskHgst/video/yk/zyz4_out_201807241956.avi";
+	string videoOutput;// = "/media/wkr/diskHgst/video/yk/zyz4_out_201807241956.avi";
     videoOutput = "d:/video/yk/zyz4_out_2018072419560001.avi";
     outputVideo.open( videoOutput,CV_FOURCC('M','J','P','G'),10,inVideoSize ,1  );
 
@@ -252,10 +252,26 @@ int   net_prepare(    dnn::Net  & net    )
     String modelConfiguration ;//= parser.get<String>("proto");
     String modelBinary ;// = parser.get<String>("model");
 
+
+	//v1
     modelConfiguration =
             "D:\\show_gui_qtOpencv\\dnn_02_caffe_example_mobilenet/models/ssd_mobilenet_v1_coco.pbtxt";
     modelBinary =
             "D:\\show_gui_qtOpencv\\dnn_02_caffe_example_mobilenet\\models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb";
+
+	//v1   
+	modelConfiguration ="ssd_mobilenet_v1_coco.pbtxt";
+	modelBinary = "ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb";
+
+
+	//v2
+	modelConfiguration ="ssd_mobilenet_v2_coco_2018_03_29.pbtxt";
+	modelBinary = "ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb";
+
+	//v2
+	modelConfiguration = "ssd_mobilenet_v2_coco_2018_03_29.pbtxt";
+	modelBinary = "ssd_mobilenet_v2_coco_2018_03_29.pb";
+
 
     CV_Assert(!modelConfiguration.empty() && !modelBinary.empty());
 
@@ -268,7 +284,8 @@ int   net_prepare(    dnn::Net  & net    )
     net = readNetFromTensorflow(modelBinary, modelConfiguration);
     //! [Initialize network]
 
-    net.setPreferableTarget(DNN_TARGET_OPENCL);
+	//net.setPreferableTarget(DNN_TARGET_OPENCL);
+	net.setPreferableTarget(DNN_TARGET_CPU);
 
     if (net.empty())
     {
@@ -408,6 +425,8 @@ void imageProc( Mat  &  src ,  dnn::Net    net, Mat &  res_detectionMat)
         }
     }
 	imwrite("frame_detection_result.jpg", frame);
+	imshow("frame_detection_result.jpg", frame);
+	waitKey(   220  );
 }
 
 
